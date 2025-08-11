@@ -1,106 +1,47 @@
 import { useState } from "react";
-
-const initialItems = [
-  { id: 1, description: "Passports", quantity: 2, packed: false },
-  { id: 2, description: "Socks", quantity: 12, packed: false },
-  { id: 3, description: "Bags", quantity: 10, packed: true },
-];
+import Logo from "./Logo";
+import Form from "./Form";
+import PackingList from "./PackingList";
+import Stats from "./Stats";
 
 export default function App() {
+  const [items, setItems] = useState([
+    { id: 1, description: "Passports", quantity: 2, packed: false },
+  ]);
+
+  function handleAddItem(newItem) {
+    setItems((items) => [...items, newItem]);
+  }
+
+  function handleDeleteItem(id) {
+    setItems((items) => items.filter((item) => item.id !== id));
+  }
+
+  function handleTogglePacked(id) {
+    setItems((items) =>
+      items.map((item) =>
+        item.id === id ? { ...item, packed: !item.packed } : item
+      )
+    );
+  }
+
+  function handleClear() {
+    if (!window.confirm("Are you sure you want to clear the list?")) return;
+
+    setItems([]);
+  }
+
   return (
     <div className="app">
       <Logo />
-      <Form />
-      <PackingList />
-      <Stats />
+      <Form onAddItem={handleAddItem} />
+      <PackingList
+        items={items}
+        onDeleteItem={handleDeleteItem}
+        onTogglePacked={handleTogglePacked}
+        onClear={handleClear}
+      />
+      <Stats items={items} />
     </div>
   );
-
-  function Logo() {
-    return <h1>🌴 Travel List 💼</h1>;
-  }
-
-  function Form() {
-    const [description, setDescription] = useState("");
-    const [quantity, setQuantity] = useState(1);
-
-    function handleSubmit(e) {
-      e.preventDefault(); // Chặn hành vi tải lại trang (trong TH này là from submit)
-
-      if (!description || !quantity) return;
-      const newItem = {
-        id: Date.now(),
-        description,
-        quantity,
-        packed: false,
-      };
-
-      setDescription("");
-      setQuantity(1);
-
-      console.log("New item added:", newItem);
-    }
-
-    return (
-      <form className="add-form" onSubmit={handleSubmit}>
-        <h3>What do you need for your trip?</h3>
-
-        <select
-          onChange={(e) => setQuantity(Number(e.target.value))}
-          value={quantity}
-        >
-          {/* Tạo một mảng từ 1 đến 20 và map qua nó để tạo các option */}
-          {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
-            <option value={num} key={num}>
-              {num}
-            </option>
-          ))}
-        </select>
-
-        <input
-          type="text"
-          placeholder="Item description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        ></input>
-
-        <button>Add</button>
-      </form>
-    );
-  }
-
-  function PackingList() {
-    return (
-      <div className="list">
-        <ul>
-          {initialItems.map((itemData) => (
-            <Item itemObject={itemData}></Item>
-          ))}
-        </ul>
-      </div>
-    );
-  }
-
-  function Item({ itemObject }) {
-    return (
-      <li>
-        <span
-          style={{
-            textDecoration: itemObject.packed ? "line-through" : "none",
-          }}
-        >
-          {itemObject.quantity} {itemObject.description}
-        </span>
-        <button>❌</button>
-      </li>
-    );
-  }
-
-  function Stats() {
-    return (
-      <footer className="stats">
-        <em>You have X items on your lists.</em>
-      </footer>
-    );
-  }
 }
